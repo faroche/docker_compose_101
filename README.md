@@ -33,7 +33,7 @@ Configuración que se pasa a los contenedores.
 ## Estructura del archivo docker-compose.yml
 
 ```yaml
-version: '3.8'                    # Versión de Compose
+#version: '3.8'                    # Versión de Compose
 services:                         # Define los contenedores
   nombre-servicio:
     image: imagen:tag             # O 'build: .' para construir
@@ -78,8 +78,6 @@ Este ejemplo muestra cómo crear un blog WordPress con base de datos MySQL.
 ## Archivo: docker-compose.yml
 
 ```yaml
-version: '3.8'
-
 services:
   # Servicio WordPress
   wordpress:
@@ -170,8 +168,6 @@ api-project/
 ## Archivo: docker-compose.yml
 
 ```yaml
-version: '3.8'
-
 services:
   # API Node.js
   api:
@@ -328,7 +324,7 @@ app.listen(PORT, () => {
 
 2. **Iniciar todos los servicios:**
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 3. **Verificar que funciona:**
@@ -338,7 +334,7 @@ app.listen(PORT, () => {
 
 4. **Ver logs en tiempo real:**
    ```bash
-   docker-compose logs -f api
+   docker compose logs -f api
    ```
 
 **¿Qué aprendemos aquí?**
@@ -356,8 +352,6 @@ Este ejemplo muestra cómo implementar un sistema de monitoreo completo.
 ## Archivo: docker-compose.yml
 
 ```yaml
-version: '3.8'
-
 services:
   # Aplicación web de ejemplo
   web-app:
@@ -525,7 +519,7 @@ scrape_configs:
 
 2. **Iniciar todo el stack:**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Acceder a las interfaces:**
