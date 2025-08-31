@@ -1,8 +1,4 @@
 # Docker Compose: Orquestando Aplicaciones Multi-Contenedor
-## Clase para Estudiantes Universitarios
-
----
-
 ## ¿Qué es Docker Compose?
 
 Docker Compose es una herramienta que permite **definir y ejecutar aplicaciones Docker multi-contenedor**. En lugar de manejar cada contenedor por separado, Compose te permite:
@@ -14,8 +10,6 @@ Docker Compose es una herramienta que permite **definir y ejecutar aplicaciones 
 
 ### Analogía
 Piensa en Docker Compose como el **director de orquesta** de tu aplicación. Mientras que Docker maneja instrumentos individuales (contenedores), Compose coordina toda la sinfonía.
-
----
 
 ## Conceptos Fundamentales
 
