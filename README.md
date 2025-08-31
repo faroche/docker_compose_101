@@ -663,4 +663,3 @@ Docker Compose es fundamental para:
 - **DevOps**: Automatizar despliegues
 - **Aprendizaje**: Experimentar con diferentes tecnologías
 
-La clave está en empezar simple y gradualmente agregar complejidad según las necesidades del proyecto.
