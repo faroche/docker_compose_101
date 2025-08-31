@@ -59,15 +59,15 @@ networks:                         # Define redes personalizadas
 
 | Comando | Descripción |
 |---------|-------------|
-| `docker-compose up` | Inicia todos los servicios |
-| `docker-compose up -d` | Inicia en modo "detached" (segundo plano) |
-| `docker-compose down` | Detiene y elimina contenedores |
-| `docker-compose build` | Construye/reconstruye imágenes |
-| `docker-compose logs` | Muestra logs de todos los servicios |
-| `docker-compose logs [servicio]` | Logs de un servicio específico |
-| `docker-compose exec [servicio] [comando]` | Ejecuta comando en contenedor |
-| `docker-compose ps` | Lista contenedores activos |
-| `docker-compose restart` | Reinicia servicios |
+| `docker compose up` | Inicia todos los servicios |
+| `docker compose up -d` | Inicia en modo "detached" (segundo plano) |
+| `docker compose down` | Detiene y elimina contenedores |
+| `docker compose build` | Construye/reconstruye imágenes |
+| `docker compose logs` | Muestra logs de todos los servicios |
+| `docker compose logs [servicio]` | Logs de un servicio específico |
+| `docker compose exec [servicio] [comando]` | Ejecuta comando en contenedor |
+| `docker compose ps` | Lista contenedores activos |
+| `docker compose restart` | Reinicia servicios |
 
 ---
 
