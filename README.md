@@ -126,7 +126,7 @@ volumes:
 
 3. **Iniciar la aplicación:**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Acceder a WordPress:**
@@ -135,13 +135,13 @@ volumes:
 
 5. **Ver logs:**
    ```bash
-   docker-compose logs wordpress
-   docker-compose logs db
+   docker compose logs wordpress
+   docker compose logs db
    ```
 
 6. **Detener la aplicación:**
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 **¿Qué aprendemos aquí?**
