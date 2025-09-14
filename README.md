@@ -866,21 +866,21 @@ chmod 644 prometheus/prometheus.yml
 ### 3. Iniciar los servicios
 ```bash
 # Iniciar en modo detached
-docker-compose up -d
+docker compose up -d
 
 # Ver logs en tiempo real (opcional)
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### 4. Verificar que los servicios estén funcionando
 ```bash
 # Verificar estado
-docker-compose ps
+docker compose ps
 
 # Verificar logs específicos si hay errores
-docker-compose logs elasticsearch
-docker-compose logs kibana
-docker-compose logs grafana
+docker compose logs elasticsearch
+docker compose logs kibana
+docker compose logs grafana
 ```
 
 ---
