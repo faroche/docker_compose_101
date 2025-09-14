@@ -345,12 +345,8 @@ app.listen(PORT, () => {
 
 ---
 
-# Stack Completo de Monitoreo - Docker Compose
+# Ejemplo # 3: Stack Completo de Monitoreo - Docker Compose
 ## ELK Stack + Prometheus + Grafana + Aplicación Web
-
-### 🔧 Solución al Error de Montaje
-
-El error que experimentas es común cuando Docker intenta montar un archivo que no existe. Vamos a crear la estructura completa paso a paso.
 
 ---
 
@@ -404,8 +400,6 @@ touch docker-compose.yml
 
 ### docker-compose.yml
 ```yaml
-version: '3.8'
-
 services:
   # Aplicación web de ejemplo
   web-app:
