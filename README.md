@@ -345,13 +345,67 @@ app.listen(PORT, () => {
 
 ---
 
-# Ejemplo 3: Stack Completo de Monitoreo (ELK + Aplicación)
+# Stack Completo de Monitoreo - Docker Compose
+## ELK Stack + Prometheus + Grafana + Aplicación Web
 
-Este ejemplo muestra cómo implementar un sistema de monitoreo completo.
+### 🔧 Solución al Error de Montaje
 
-## Archivo: docker-compose.yml
+El error que experimentas es común cuando Docker intenta montar un archivo que no existe. Vamos a crear la estructura completa paso a paso.
 
+---
+
+## Estructura de Directorios Requerida
+
+Primero, crea esta estructura exacta de directorios:
+
+```
+monitoreo/
+├── docker-compose.yml
+├── html/
+│   └── index.html
+├── nginx/
+│   └── nginx.conf
+├── filebeat/
+│   └── filebeat.yml
+├── logstash/
+│   └── logstash.conf
+├── prometheus/
+│   └── prometheus.yml
+└── grafana/
+    ├── dashboards/
+    │   └── dashboard.yml
+    └── datasources/
+        └── datasource.yml
+```
+
+---
+
+## Paso a Paso: Creación del Proyecto
+
+### 1. Crear el directorio principal y navegar a él
+```bash
+mkdir monitoreo
+cd monitoreo
+```
+
+### 2. Crear todos los subdirectorios necesarios
+```bash
+mkdir -p html nginx filebeat logstash prometheus grafana/dashboards grafana/datasources
+```
+
+### 3. Crear el archivo docker-compose.yml
+```bash
+touch docker-compose.yml
+```
+
+---
+
+## Archivos de Configuración
+
+### docker-compose.yml
 ```yaml
+version: '3.8'
+
 services:
   # Aplicación web de ejemplo
   web-app:
@@ -374,10 +428,16 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
+      - cluster.name=docker-cluster
     ports:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # Logstash para procesar logs
   logstash:
@@ -386,8 +446,11 @@ services:
       - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
       - "5044:5044"
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
 
   # Kibana para visualizar datos
   kibana:
@@ -396,8 +459,11 @@ services:
       - "5601:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=""
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
 
   # Filebeat para enviar logs
   filebeat:
@@ -419,6 +485,11 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
 
   # Grafana para dashboards
   grafana:
@@ -427,6 +498,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
@@ -438,7 +510,170 @@ volumes:
   grafana_data:
 ```
 
-## Archivos de configuración necesarios:
+---
+
+## Archivos de Configuración Individuales
+
+### html/index.html
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Aplicación Monitoreada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            background: #4CAF50;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .link-card {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s;
+        }
+        .link-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Aplicación Monitoreada</h1>
+        <div class="status">✅ Sistema Funcionando Correctamente</div>
+        <p>Esta aplicación está siendo monitoreada por un stack completo de observabilidad:</p>
+        
+        <ul>
+            <li><strong>ELK Stack</strong> - Para logs centralizados</li>
+            <li><strong>Prometheus</strong> - Para métricas del sistema</li>
+            <li><strong>Grafana</strong> - Para dashboards visuales</li>
+        </ul>
+
+        <div class="links">
+            <a href="http://localhost:5601" class="link-card" target="_blank">
+                <h3>📊 Kibana</h3>
+                <p>Análisis y búsqueda de logs</p>
+            </a>
+            <a href="http://localhost:9090" class="link-card" target="_blank">
+                <h3>📈 Prometheus</h3>
+                <p>Métricas del sistema</p>
+            </a>
+            <a href="http://localhost:3000" class="link-card" target="_blank">
+                <h3>📋 Grafana</h3>
+                <p>Dashboards y alertas</p>
+                <small>admin / admin123</small>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Generar logs para demostración
+        console.log('🚀 Aplicación iniciada:', new Date().toISOString());
+        
+        let logCounter = 0;
+        setInterval(() => {
+            logCounter++;
+            console.log(`💓 Heartbeat #${logCounter}:`, new Date().toISOString());
+            
+            // Simular diferentes tipos de logs
+            if (logCounter % 5 === 0) {
+                console.warn('⚠️  Advertencia simulada - Cache miss');
+            }
+            if (logCounter % 10 === 0) {
+                console.info('ℹ️  Info - Cleanup completado');
+            }
+            if (logCounter % 15 === 0) {
+                console.error('❌ Error simulado - Timeout de conexión');
+            }
+        }, 10000); // Cada 10 segundos
+
+        // Simular actividad de usuario
+        document.addEventListener('click', (e) => {
+            console.log('👆 Click detectado en:', e.target.tagName);
+        });
+    </script>
+</body>
+</html>
+```
+
+### nginx/nginx.conf
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Formato de log personalizado
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    # Logs de acceso
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log warn;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        # Endpoint de health check
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # API simulada para generar logs
+        location /api/test {
+            return 200 '{"status": "ok", "timestamp": "$time_iso8601"}';
+            add_header Content-Type application/json;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+}
+```
 
 ### filebeat/filebeat.yml
 ```yaml
@@ -451,10 +686,24 @@ processors:
 - add_docker_metadata:
     host: "unix:///var/run/docker.sock"
 
+- decode_json_fields:
+    fields: ["message"]
+    target: ""
+    overwrite_keys: true
+
 output.logstash:
   hosts: ["logstash:5044"]
 
 logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# Configuración adicional para debugging
+logging.selectors: ["*"]
 ```
 
 ### logstash/logstash.conf
@@ -466,9 +715,41 @@ input {
 }
 
 filter {
+  # Procesar logs de Docker
   if [container][name] {
     mutate {
       add_field => { "service_name" => "%{[container][name]}" }
+    }
+  }
+
+  # Parsear logs JSON si existen
+  if [message] =~ /^\{.*\}$/ {
+    json {
+      source => "message"
+    }
+  }
+
+  # Agregar timestamp procesado
+  mutate {
+    add_field => { "processed_at" => "%{[@timestamp]}" }
+  }
+
+  # Detectar nivel de log por contenido
+  if [message] =~ /(?i)error/ {
+    mutate {
+      add_field => { "log_level" => "ERROR" }
+    }
+  } else if [message] =~ /(?i)warn/ {
+    mutate {
+      add_field => { "log_level" => "WARN" }
+    }
+  } else if [message] =~ /(?i)info/ {
+    mutate {
+      add_field => { "log_level" => "INFO" }
+    }
+  } else {
+    mutate {
+      add_field => { "log_level" => "DEBUG" }
     }
   }
 }
@@ -478,6 +759,11 @@ output {
     hosts => ["elasticsearch:9200"]
     index => "docker-logs-%{+YYYY.MM.dd}"
   }
+
+  # Para debugging, también mostrar en stdout
+  stdout {
+    codec => rubydebug
+  }
 }
 ```
 
@@ -485,60 +771,221 @@ output {
 ```yaml
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
 
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
+
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch:9200']
+    scrape_interval: 30s
+    metrics_path: /_prometheus/metrics
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['web-app:80']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+# Configuración de alertas (opcional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
 ```
 
-### html/index.html
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Mi Aplicación Monitoreada</title>
-</head>
-<body>
-    <h1>¡Aplicación funcionando!</h1>
-    <p>Esta aplicación está siendo monitoreada por el stack ELK y Prometheus/Grafana.</p>
-    <script>
-        // Generar algunos logs
-        setInterval(() => {
-            console.log('Heartbeat: ' + new Date().toISOString());
-            fetch('/api/test').catch(e => console.error('API Error:', e));
-        }, 30000);
-    </script>
-</body>
-</html>
+### grafana/datasources/datasource.yml
+```yaml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: "docker-logs-*"
+    interval: Daily
+    timeField: "@timestamp"
+    editable: true
 ```
 
-## Instrucciones de uso:
+### grafana/dashboards/dashboard.yml
+```yaml
+apiVersion: 1
 
-1. **Crear estructura de archivos y configuraciones**
-
-2. **Iniciar todo el stack:**
-   ```bash
-   docker compose up -d
-   ```
-
-3. **Acceder a las interfaces:**
-   - Aplicación web: `http://localhost:8080`
-   - Kibana (logs): `http://localhost:5601`
-   - Prometheus: `http://localhost:9090`
-   - Grafana: `http://localhost:3000` (admin/admin123)
-
-4. **Configurar Kibana:**
-   - Crear index pattern: `docker-logs-*`
-   - Explorar logs en Discover
-
-**¿Qué aprendemos aquí?**
-- Arquitectura de microservicios compleja
-- Monitoreo y logging centralizado
-- Configuración avanzada con múltiples archivos
-- Stack de observabilidad moderno
+providers:
+  - name: 'Docker Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+```
 
 ---
+
+## Instrucciones de Instalación
+
+### 1. Verificar la estructura
+Ejecuta este comando para verificar que todos los archivos estén presentes:
+
+```bash
+find . -type f -name "*.yml" -o -name "*.conf" -o -name "*.html" | sort
+```
+
+Deberías ver:
+```
+./docker-compose.yml
+./filebeat/filebeat.yml
+./grafana/dashboards/dashboard.yml
+./grafana/datasources/datasource.yml
+./html/index.html
+./logstash/logstash.conf
+./nginx/nginx.conf
+./prometheus/prometheus.yml
+```
+
+### 2. Verificar permisos
+```bash
+chmod 644 nginx/nginx.conf
+chmod 644 filebeat/filebeat.yml
+chmod 644 logstash/logstash.conf
+chmod 644 prometheus/prometheus.yml
+```
+
+### 3. Iniciar los servicios
+```bash
+# Iniciar en modo detached
+docker-compose up -d
+
+# Ver logs en tiempo real (opcional)
+docker-compose logs -f
+```
+
+### 4. Verificar que los servicios estén funcionando
+```bash
+# Verificar estado
+docker-compose ps
+
+# Verificar logs específicos si hay errores
+docker-compose logs elasticsearch
+docker-compose logs kibana
+docker-compose logs grafana
+```
+
+---
+
+## Acceso a las Aplicaciones
+
+Una vez que todos los contenedores estén funcionando:
+
+| Servicio | URL | Credenciales |
+|----------|-----|--------------|
+| **Aplicación Web** | http://localhost:8080 | - |
+| **Kibana** | http://localhost:5601 | - |
+| **Prometheus** | http://localhost:9090 | - |
+| **Grafana** | http://localhost:3000 | admin / admin123 |
+| **Elasticsearch** | http://localhost:9200 | - |
+
+---
+
+## Configuración Post-Instalación
+
+### En Kibana:
+1. Ir a "Stack Management" → "Index Patterns"
+2. Crear un nuevo index pattern: `docker-logs-*`
+3. Seleccionar `@timestamp` como time field
+4. Ir a "Discover" para ver los logs
+
+### En Grafana:
+1. Las fuentes de datos ya están configuradas automáticamente
+2. Puedes crear dashboards personalizados
+3. Explorar métricas de Prometheus
+
+---
+
+## Solución de Problemas Comunes
+
+### Error: "file not found"
+```bash
+# Verificar que todos los archivos existen
+ls -la nginx/nginx.conf
+ls -la filebeat/filebeat.yml
+ls -la logstash/logstash.conf
+```
+
+### Error: "permission denied"
+```bash
+# Corregir permisos
+sudo chown -R $USER:$USER .
+chmod -R 644 .
+```
+
+### Elasticsearch no inicia
+```bash
+# Verificar límites de memoria virtual
+echo 'vm.max_map_count=262144' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+### Servicios no se comunican
+```bash
+# Verificar red de Docker
+docker network ls
+docker network inspect monitoreo_default
+```
+
+---
+
+## Comandos Útiles para Monitoreo
+
+```bash
+# Ver logs en tiempo real de un servicio específico
+docker-compose logs -f elasticsearch
+
+# Reiniciar un servicio específico
+docker-compose restart kibana
+
+# Ver recursos utilizados
+docker stats
+
+# Limpiar volúmenes (CUIDADO: elimina datos)
+docker-compose down -v
+
+# Ver redes creadas
+docker network ls
+
+# Acceder a un contenedor
+docker-compose exec elasticsearch bash
+```
+
+---
+
+## Próximos Pasos
+
+1. **Personalizar dashboards** en Grafana
+2. **Configurar alertas** en Prometheus
+3. **Agregar más aplicaciones** al monitoreo
+4. **Implementar alertas** por email/Slack
+5. **Optimizar índices** en Elasticsearch
+
+Este stack completo te proporciona una base sólida para monitorear aplicaciones en contenedores de forma profesional.
 
 # Mejores Prácticas
 
