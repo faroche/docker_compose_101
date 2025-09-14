@@ -951,22 +951,22 @@ docker network inspect monitoreo_default
 
 ```bash
 # Ver logs en tiempo real de un servicio específico
-docker-compose logs -f elasticsearch
+docker compose logs -f elasticsearch
 
 # Reiniciar un servicio específico
-docker-compose restart kibana
+docker compose restart kibana
 
 # Ver recursos utilizados
 docker stats
 
 # Limpiar volúmenes (CUIDADO: elimina datos)
-docker-compose down -v
+docker compose down -v
 
 # Ver redes creadas
 docker network ls
 
 # Acceder a un contenedor
-docker-compose exec elasticsearch bash
+docker compose exec elasticsearch bash
 ```
 
 ---
